@@ -28,9 +28,12 @@ $(document).ready(function(){
 		$("#game_speed").html(G_GAME_SPEED);
 	});
 
+	$("#start_game_button").click(start);
+
 });
 
-jsPlumb.ready(function () {
+function start() {
+//jsPlumb.ready(function () {
 
     var instance = jsPlumb.getInstance({
         // default drag options
@@ -179,6 +182,4 @@ jsPlumb.ready(function () {
 
     jsPlumb.fire("jsPlumbDemoLoaded", instance);
 
-});
-
-
+}
