@@ -32,8 +32,22 @@ $(document).ready(function(){
 
 });
 
+// display progress alternates between two states
+var _state = true;
+function displayProgress(){
+	// TODO do this only for active windows
+	if(_state)
+		$(".window").css('box-shadow', '2px 2px 19px #e0e0e0');
+	else
+		$(".window").css('box-shadow', '2px 2px 19px red');
+
+	_state = !_state;
+
+	if(G_GAME_STATE == cGameStarted)
+		setTimeout(displayProgress, 1000/G_GAME_SPEED);
+}
+
 function start() {
-//jsPlumb.ready(function () {
 
     var instance = jsPlumb.getInstance({
         // default drag options
@@ -182,4 +196,7 @@ function start() {
 
     jsPlumb.fire("jsPlumbDemoLoaded", instance);
 
+    // set flag of game state
+    G_GAME_STATE = cGameStarted;
+    displayProgress();
 }

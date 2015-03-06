@@ -34,6 +34,13 @@
     filter:alpha(opacity=90);
 }
 
+.window-active {
+    box-shadow: 2px 2px 19px red;
+    -o-box-shadow: 2px 2px 19px red;
+    -webkit-box-shadow: 2px 2px 19px red;
+    -moz-box-shadow: 2px 2px 19px red;
+}
+
 .window a {
     font-family:helvetica;
 }
