@@ -15,8 +15,8 @@
     position:absolute;
     color:black;
     padding:0.5em;
-    width:100px;
-    height:100px;
+    width:150px;
+    height:150px;
     line-height: 80px;
     -webkit-transition: -webkit-box-shadow 0.15s ease-in;
     -moz-transition: -moz-box-shadow 0.15s ease-in;
@@ -45,11 +45,11 @@
     font-family:helvetica;
 }
 
-.flowchart-demo {
+.flow {
 	min-height:500px;
 }
 
-.flowchart-demo .window { border:1px solid #346789;
+.flow .window { border:1px solid #346789;
 box-shadow: 2px 2px 19px #aaa;
    -o-box-shadow: 2px 2px 19px #aaa;
    -webkit-box-shadow: 2px 2px 19px #aaa;
@@ -67,7 +67,7 @@ font-family:helvetica;padding:0.5em;
 font-size:0.9em;
 }
 
-.flowchart-demo .window:hover {
+.flow .window:hover {
 	box-shadow: 2px 2px 19px #444;
    -o-box-shadow: 2px 2px 19px #444;
    -webkit-box-shadow: 2px 2px 19px #444;
@@ -76,17 +76,17 @@ font-size:0.9em;
 	filter:alpha(opacity=60);
 }
 
-.flowchart-demo .active {
+.flow .active {
 	border:1px dotted green;
 }
-.flowchart-demo .hover {
+.flow .hover {
 	border:1px dotted red;
 }
 
-.flowchart-demo ._jsPlumb_connector { z-index:4; }
-.flowchart-demo ._jsPlumb_endpoint, .endpointTargetLabel, .endpointSourceLabel{ z-index:21;cursor:pointer; }
+.flow ._jsPlumb_connector { z-index:4; }
+.flow ._jsPlumb_endpoint, .endpointTargetLabel, .endpointSourceLabel{ z-index:21;cursor:pointer; }
 
-.flowchart-demo .aLabel {
+.flow .aLabel {
  	background-color:white; 
 	padding:0.4em; 
 	font:12px sans-serif; 
@@ -97,7 +97,7 @@ font-size:0.9em;
 	filter:alpha(opacity=80);
 	cursor: pointer;
 }
-.flowchart-demo .aLabel._jsPlumb_hover {
+.flow .aLabel._jsPlumb_hover {
 	background-color:#5C96BC;
 	color:white;	
 	border:1px solid white;
@@ -127,4 +127,40 @@ font-size:0.9em;
     -moz-transition: -moz-box-shadow 0.15s ease-in;
     -o-transition: -o-box-shadow 0.15s ease-in;
     transition: box-shadow 0.15s ease-in;
+}
+
+.people{
+    background-color:#eee;
+    border:1px solid #346789;
+    box-shadow: 2px 2px 19px #e0e0e0;
+    -o-box-shadow: 2px 2px 19px #e0e0e0;
+    -webkit-box-shadow: 2px 2px 19px #e0e0e0;
+    -moz-box-shadow: 2px 2px 19px #e0e0e0;
+    -moz-border-radius:0.5em;
+    border-radius:0.5em;
+    color:black;
+    padding:0.5em;
+    -webkit-transition: -webkit-box-shadow 0.15s ease-in;
+    -moz-transition: -moz-box-shadow 0.15s ease-in;
+    -o-transition: -o-box-shadow 0.15s ease-in;
+    transition: box-shadow 0.15s ease-in;
+    width:100px;
+    height:100px;
+    z-index:500;
+    margin:5px;
+    display: inline-block;
+}
+
+.dev{
+    background-color:#5cb85c;
+    color:#ffffff;
+}
+.QE{
+    background-color:yellow;
+    color:#000000;
+}
+
+.manager{
+    background-color:#2aabd2;
+    color:#ffffff;
 }

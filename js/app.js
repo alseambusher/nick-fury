@@ -23,17 +23,25 @@ var G_NUM_TILES = 0;
 var game_connections = { 6: [[1,3,R,L],
 			[2,3,R,L],
 			[3,4,R,L],
-			[3,5,R,L],
+			[3,5,B,L],
 			[4,6,R,L],
 			[5,6,R,L]] };
 
 // left and top positions of the window in %
-var window_positions = { 6: [[10,10],
-			     [10,50],	
+var window_positions = { 6: [[5,10],
+			     [5,50],	
 			     [30,25],	
-			     [50,10],	
-			     [50,50],	
-			     [70,25]]};
+			     [55,10],	
+			     [55,50],	
+			     [80,25]]};
+
+var window_states = [];
+
+// people ------------------------------------------------
+// Dev - DB, .NET, Web
+// QE skills
+// Manager Nos
+var people = { "Dev" : [[20,100,50],[50,10,100],[10,10,10]], "QE" : [30,20,50], "Manager" : 1 }
 
 
 $(document).ready(function(){
@@ -52,6 +60,36 @@ $(document).ready(function(){
 	});
 
 	$("#start_game_button").click(start);
+
+	// make dev
+	for (var i=0; i<people["Dev"].length; i++){
+		node = people["Dev"][i];
+		var person = document.createElement("div");
+		person.innerHTML = "<b>Developer</b><br>A: "+node[0]+"<br>B: "+node[1]+"<br>C: "+node[2];
+		person.id = "Dev"+i;
+		person.setAttribute('class','people dev');
+		document.getElementById("toolbox").appendChild(person);
+	}
+	document.getElementById("toolbox").innerHTML+="<br>";
+	// making QE
+	for (var i=0; i<people["QE"].length; i++){
+		var person = document.createElement("div");
+		person.innerHTML = "<b>Quality Engineer<br>"+people["QE"][i]+"</b>";
+		person.id = "QE"+i;
+		person.setAttribute('class','people QE');
+		document.getElementById("toolbox").appendChild(person);
+	}
+	document.getElementById("toolbox").innerHTML+="<br>";
+	// making manager
+	for (var i=0; i<people["Manager"]; i++){
+		var person = document.createElement("div");
+		person.innerHTML = "<b>Manager</b>";
+		person.id = "Manager"+i;
+		person.setAttribute('class','people manager');
+		document.getElementById("toolbox").appendChild(person);
+	}
+
+	$(".people").draggable();
 
 });
 
@@ -81,7 +119,7 @@ function start() {
         ConnectionOverlays: [
             [ "Arrow", { location: 1 } ],
         ],
-        Container: "flowchart-demo"
+        Container: "flow"
     });
 
     var basicType = {
@@ -172,7 +210,7 @@ function start() {
     // suspend drawing and initialise.
     instance.batch(function () {
 
-	for(var i=0; i<G_NUM_TILES; i++){
+	for(var i=0; i< game_connections[G_NUM_TILES].length; i++){
 		node = game_connections[G_NUM_TILES][i];
         	_addEndpoints("Window"+node[0], [node[2]], []);
         	_addEndpoints("Window"+node[1], [], [node[3]]);
@@ -183,11 +221,12 @@ function start() {
             init(connInfo.connection);
         });
 
-        jsPlumb.draggable(document.querySelectorAll(".window"), { grid: [20, 20] });
+        //jsPlumb.draggable(document.querySelectorAll(".window"), { grid: [20, 20] });
 
         // connect the tiles
-	for(var i=0; i<G_NUM_TILES; i++){
+	for(var i=0; i< game_connections[G_NUM_TILES].length; i++){
 		node = game_connections[G_NUM_TILES][i];
+		console.log(node);
         	instance.connect({uuids: ["Window"+node[0]+node[2], "Window"+node[1]+node[3]], editable: false});
 	}
 
@@ -213,7 +252,7 @@ function start() {
         });
     });
 
-    jsPlumb.fire("jsPlumbDemoLoaded", instance);
+    jsPlumb.fire("nick fury loaded", instance);
 
     // set flag of game state
     G_GAME_STATE = cGameStarted;
