@@ -7,14 +7,37 @@ const cGamePaused = 2;
 
 const cMaxGameSpeed = 5;
 
+//points
+const T = "TopCenter";
+const B = "BottomCenter";
+const L = "LeftMiddle";
+const R = "RightMiddle";
+
 
 // globals -----------------------------------------------
 var G_GAME_SPEED = 1;
 var G_GAME_STATE = cGameStopped;
 var G_NUM_TILES = 0;
 
+// game settings -----------------------------------------
+var game_connections = { 6: [[1,3,R,L],
+			[2,3,R,L],
+			[3,4,R,L],
+			[3,5,R,L],
+			[4,6,R,L],
+			[5,6,R,L]] };
+
+// left and top positions of the window in %
+var window_positions = { 6: [[10,10],
+			     [10,50],	
+			     [30,25],	
+			     [50,10],	
+			     [50,50],	
+			     [70,25]]};
+
 
 $(document).ready(function(){
+    	G_NUM_TILES = parseInt($("#num_tiles").html());
 	// set num tiles
 	$(".num_tiles_selector").click(function(){
 		G_NUM_TILES = parseInt($(this).html().split(" ")[1]);
@@ -32,6 +55,8 @@ $(document).ready(function(){
 
 });
 
+
+
 // display progress alternates between two states
 var _state = true;
 function displayProgress(){
@@ -48,7 +73,6 @@ function displayProgress(){
 }
 
 function start() {
-
     var instance = jsPlumb.getInstance({
         // default drag options
         DragOptions: { cursor: 'pointer', zIndex: 2000 },
@@ -56,11 +80,6 @@ function start() {
         // case it returns the 'labelText' member that we set on each connection in the 'init' method below.
         ConnectionOverlays: [
             [ "Arrow", { location: 1 } ],
-            [ "Label", {
-                location: 0.1,
-                id: "label",
-                cssClass: "aLabel"
-            }]
         ],
         Container: "flowchart-demo"
     });
@@ -144,33 +163,33 @@ function start() {
         }
     };
 
+    // set window positions
+    for (var i=1; i<=G_NUM_TILES; i++){
+    	node = window_positions[G_NUM_TILES][i-1];
+	$("#flowchartWindow"+i).css('left', node[0]+"%");
+	$("#flowchartWindow"+i).css('top', node[1]+"%");
+    }
     // suspend drawing and initialise.
     instance.batch(function () {
 
-        _addEndpoints("Window4", ["TopCenter", "BottomCenter"], ["LeftMiddle", "RightMiddle"]);
-        _addEndpoints("Window2", ["LeftMiddle", "BottomCenter"], ["TopCenter", "RightMiddle"]);
-        _addEndpoints("Window3", ["RightMiddle", "BottomCenter"], ["LeftMiddle", "TopCenter"]);
-        _addEndpoints("Window1", ["LeftMiddle", "RightMiddle"], ["TopCenter", "BottomCenter"]);
+	for(var i=0; i<G_NUM_TILES; i++){
+		node = game_connections[G_NUM_TILES][i];
+        	_addEndpoints("Window"+node[0], [node[2]], []);
+        	_addEndpoints("Window"+node[1], [], [node[3]]);
+	}
 
         // listen for new connections; initialise them the same way we initialise the connections at startup.
         instance.bind("connection", function (connInfo, originalEvent) {
             init(connInfo.connection);
         });
 
-        // make all the window divs draggable
-        instance.draggable(jsPlumb.getSelector(".flowchart-demo .window"), { grid: [20, 20] });
-        // THIS DEMO ONLY USES getSelector FOR CONVENIENCE. Use your library's appropriate selector
-        // method, or document.querySelectorAll:
-        //jsPlumb.draggable(document.querySelectorAll(".window"), { grid: [20, 20] });
+        jsPlumb.draggable(document.querySelectorAll(".window"), { grid: [20, 20] });
 
-        // connect a few up
-        instance.connect({uuids: ["Window2BottomCenter", "Window3TopCenter"], editable: true});
-        instance.connect({uuids: ["Window2LeftMiddle", "Window4LeftMiddle"], editable: true});
-        instance.connect({uuids: ["Window4TopCenter", "Window4RightMiddle"], editable: true});
-        instance.connect({uuids: ["Window3RightMiddle", "Window2RightMiddle"], editable: true});
-        instance.connect({uuids: ["Window4BottomCenter", "Window1TopCenter"], editable: true});
-        instance.connect({uuids: ["Window3BottomCenter", "Window1BottomCenter"], editable: true});
-        //
+        // connect the tiles
+	for(var i=0; i<G_NUM_TILES; i++){
+		node = game_connections[G_NUM_TILES][i];
+        	instance.connect({uuids: ["Window"+node[0]+node[2], "Window"+node[1]+node[3]], editable: false});
+	}
 
         //
         // listen for clicks on connections, and offer to delete connections on click.
