@@ -48,6 +48,8 @@ var levels = { 6 : [{"Dev":[0,0,1000], "QE":500,"locked":false},
 			{"Dev":[300,500,0], "QE":500,"XD":500},
 			{"Dev":[500,100,100], "QE":500,"XD":500}]}
 
+var workers = {6:{}};
+
 // people ------------------------------------------------
 // Dev - DB, .NET, Web
 // QE skills
@@ -115,17 +117,18 @@ $(document).ready(function(){
 
 // display progress alternates between two states
 var _state = true;
-function displayProgress(){
+function display_progress(){
 	// TODO do this only for active windows
-	if(_state)
-		$(".window").css('box-shadow', '2px 2px 19px #e0e0e0');
-	else
-		$(".window").css('box-shadow', '2px 2px 19px red');
-
+	for(var id in workers[G_NUM_TILES]){
+		if(_state)
+			$("#"+id).css('box-shadow', '2px 2px 19px #e0e0e0');
+		else
+			$("#"+id).css('box-shadow', '2px 2px 19px red');
+	}
 	_state = !_state;
 
 	if(G_GAME_STATE == cGameStarted)
-		setTimeout(displayProgress, 1000/G_GAME_SPEED);
+		setTimeout(display_progress, 500/G_GAME_SPEED);
 }
 // this simply updates the windows using the array levels
 function create_tiles(){
@@ -138,18 +141,17 @@ function create_tiles(){
     	node = levels[G_NUM_TILES][i];
 	// see if level is locked
 	if(node.locked == false){
-		//TODO better formatting
 		var content="";
 		if(node.Dev != undefined)
-			content+=node.Dev[0]+" "+node.Dev[1]+" "+node.Dev[2]+"<br>";
+			content+="<div class='dev'>"+node.Dev[0]+"<b>A</b> "+node.Dev[1]+"<b>B</b> "+node.Dev[2]+"<b>C</b><br></div>";
 		if(node.QE != undefined)
-			content+=node.QE+"<br>";
+			content+="<div class='QE'>"+node.QE+"</div>";
 		if(node.XD != undefined)
-			content+=node.XD+"<br>";
+			content+="<div class='XD'>"+node.XD+"</div><br>";
 		_window.innerHTML = content;
 	}
 	else{
-		_window.setAttribute("class", "window btn-danger");
+		_window.setAttribute("class", "window locked");
 		_window.innerHTML = "<b>Locked</b>";
 	}
 	document.getElementById("flow").appendChild(_window);
@@ -160,29 +162,31 @@ function create_tiles(){
 function update_locks(){
 	//TODO
 }
-
 function start() {
 
     // create tiles
     create_tiles();
     // make all the people in the toolbox draggable
-    $(".people").draggable({revert: 'invalid'});
+    $(".people").draggable({revert: true});
     $(".window").droppable({
     	drop: function(e,ui){
-	//TODO
-		console.log(ui);
+	//TODO check
+		id = ui.draggable[0].id;
+		index = parseInt(id[id.length-1]);
+		type = id.substr(0,id.length-1);
+		if(workers[G_NUM_TILES][this.id] == undefined){
+			workers[G_NUM_TILES][this.id] = {};
+			workers[G_NUM_TILES][this.id][type] = index;
+			$("#"+id).fadeOut();
+		} else {
+			if(workers[G_NUM_TILES][this.id][type] == undefined){
+				workers[G_NUM_TILES][this.id][type] = index;
+				$("#"+id).fadeOut();
+			}
+		}
+		console.log(workers);
 	},
-	accept: function(){
-		// TODO
-		console.log(this);
-		return false;
-	}
-    });
-    // put it back if it is invalid
-    $(".toolbox").droppable({
-    	drop: function(e,ui){
-	 $(ui.draggable).appendTo(this);
-	}
+	accept: ".people"
     });
 
     var instance = jsPlumb.getInstance({
@@ -300,7 +304,6 @@ function start() {
         // connect the tiles
 	for(var i=0; i< game_connections[G_NUM_TILES].length; i++){
 		node = game_connections[G_NUM_TILES][i];
-		console.log(node);
         	instance.connect({uuids: ["Window"+node[0]+node[2], "Window"+node[1]+node[3]], editable: false});
 	}
 
@@ -330,4 +333,5 @@ function start() {
 
     // set flag of game state
     G_GAME_STATE = cGameStarted;
+    display_progress();
 }

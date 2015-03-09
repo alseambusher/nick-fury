@@ -167,3 +167,7 @@ font-size:0.9em;
     background-color:#7C4A74;
     color:#ffffff;
 }
+.locked{
+    background-image: linear-gradient(to bottom,#d9534f 0,#c12e2a 100%);
+    color:#ffffff;
+}
