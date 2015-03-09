@@ -35,13 +35,19 @@ var window_positions = { 6: [[5,10],
 			     [55,50],	
 			     [80,25]]};
 
-var window_states = [];
+var levels = { 6 : [{"Dev":[0,0,1000], "QE":500,"locked":false},
+			{"Dev":[30,500,100], "QE":500,"XD":500,"locked":false},
+			{"Dev":[500,60,0], "QE":500,"XD":500},
+			{"Dev":[500,0,0], "QE":500},
+			{"Dev":[300,500,0], "QE":500,"XD":500},
+			{"Dev":[500,100,100], "QE":500,"XD":500}]}
 
 // people ------------------------------------------------
 // Dev - DB, .NET, Web
 // QE skills
 // Manager Nos
-var people = { "Dev" : [[20,100,50],[50,10,100],[10,10,10]], "QE" : [30,20,50], "Manager" : 1 }
+// XD skills
+var people = { "Dev" : [[20,100,50],[50,10,100],[10,10,10]], "QE" : [30,20,50], "Manager" : 1, "XD" : [20,10]}
 
 
 $(document).ready(function(){
@@ -80,6 +86,15 @@ $(document).ready(function(){
 		document.getElementById("toolbox").appendChild(person);
 	}
 	document.getElementById("toolbox").innerHTML+="<br>";
+	// making XD
+	for (var i=0; i<people["XD"].length; i++){
+		var person = document.createElement("div");
+		person.innerHTML = "<b>Experience Designer<br>"+people["XD"][i]+"</b>";
+		person.id = "XD"+i;
+		person.setAttribute('class','people XD');
+		document.getElementById("toolbox").appendChild(person);
+	}
+	document.getElementById("toolbox").innerHTML+="<br>";
 	// making manager
 	for (var i=0; i<people["Manager"]; i++){
 		var person = document.createElement("div");
@@ -89,7 +104,6 @@ $(document).ready(function(){
 		document.getElementById("toolbox").appendChild(person);
 	}
 
-	$(".people").draggable();
 
 });
 
@@ -111,6 +125,27 @@ function displayProgress(){
 }
 
 function start() {
+
+    // make all the people in the toolbox draggable
+    $(".people").draggable({revert: 'invalid'});
+    $(".window").droppable({
+    	drop: function(e,ui){
+	//TODO
+		console.log(ui);
+	},
+	accept: function(){
+		// TODO
+		console.log(this);
+		return false;
+	}
+    });
+    // put it back if it is invalid
+    $(".toolbox").droppable({
+    	drop: function(e,ui){
+	 $(ui.draggable).appendTo(this);
+	}
+    });
+
     var instance = jsPlumb.getInstance({
         // default drag options
         DragOptions: { cursor: 'pointer', zIndex: 2000 },
