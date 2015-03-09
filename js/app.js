@@ -20,6 +20,9 @@ var G_GAME_STATE = cGameStopped;
 var G_NUM_TILES = 0;
 
 // game settings -----------------------------------------
+// 1 3 R L means: node1 - node3 connection is made from right of node1 to left of node2
+// 6 is number of tiles
+// TODO for 8 10 12
 var game_connections = { 6: [[1,3,R,L],
 			[2,3,R,L],
 			[3,4,R,L],
@@ -28,6 +31,7 @@ var game_connections = { 6: [[1,3,R,L],
 			[5,6,R,L]] };
 
 // left and top positions of the window in %
+// This specifies arrangements of each node. [5,10] means first node is 5% from left and 10% from top
 var window_positions = { 6: [[5,10],
 			     [5,50],	
 			     [30,25],	
@@ -35,6 +39,8 @@ var window_positions = { 6: [[5,10],
 			     [55,50],	
 			     [80,25]]};
 
+// this should specify the requirement of each node.
+// NOTE: add "locked":false to starting nodes
 var levels = { 6 : [{"Dev":[0,0,1000], "QE":500,"locked":false},
 			{"Dev":[30,500,100], "QE":500,"XD":500,"locked":false},
 			{"Dev":[500,60,0], "QE":500,"XD":500},
@@ -67,7 +73,7 @@ $(document).ready(function(){
 
 	$("#start_game_button").click(start);
 
-	// make dev
+	// making dev
 	for (var i=0; i<people["Dev"].length; i++){
 		node = people["Dev"][i];
 		var person = document.createElement("div");
@@ -103,8 +109,6 @@ $(document).ready(function(){
 		person.setAttribute('class','people manager');
 		document.getElementById("toolbox").appendChild(person);
 	}
-
-
 });
 
 
@@ -123,9 +127,44 @@ function displayProgress(){
 	if(G_GAME_STATE == cGameStarted)
 		setTimeout(displayProgress, 1000/G_GAME_SPEED);
 }
+// this simply updates the windows using the array levels
+function create_tiles(){
+    // add nodes
+    for(var i=0; i<G_NUM_TILES; i++){
+	_window = document.createElement("div");
+	_window.id = "flowchartWindow"+(i+1);
+	_window.setAttribute("class", "window");
+
+    	node = levels[G_NUM_TILES][i];
+	// see if level is locked
+	if(node.locked == false){
+		//TODO better formatting
+		var content="";
+		if(node.Dev != undefined)
+			content+=node.Dev[0]+" "+node.Dev[1]+" "+node.Dev[2]+"<br>";
+		if(node.QE != undefined)
+			content+=node.QE+"<br>";
+		if(node.XD != undefined)
+			content+=node.XD+"<br>";
+		_window.innerHTML = content;
+	}
+	else{
+		_window.setAttribute("class", "window btn-danger");
+		_window.innerHTML = "<b>Locked</b>";
+	}
+	document.getElementById("flow").appendChild(_window);
+    }
+}
+
+//call this after end of process completion
+function update_locks(){
+	//TODO
+}
 
 function start() {
 
+    // create tiles
+    create_tiles();
     // make all the people in the toolbox draggable
     $(".people").draggable({revert: 'invalid'});
     $(".window").droppable({
@@ -291,5 +330,4 @@ function start() {
 
     // set flag of game state
     G_GAME_STATE = cGameStarted;
-    displayProgress();
 }
