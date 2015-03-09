@@ -23,30 +23,108 @@ var G_NUM_TILES = 0;
 // 1 3 R L means: node1 - node3 connection is made from right of node1 to left of node2
 // 6 is number of tiles
 // TODO for 8 10 12
-var game_connections = { 6: [[1,3,R,L],
+var game_connections = { 
+            6: [[1,3,R,L],
 			[2,3,R,L],
 			[3,4,R,L],
 			[3,5,B,L],
 			[4,6,R,L],
-			[5,6,R,L]] };
+			[5,6,R,L]],
+
+            4    : [[1,2,R,L],
+            [2,3,B,T],
+            [3,4,R,L]],
+
+            8    : [[1,3,R,L],
+            [2,5,R,L],
+            [3,6,R,L],
+            [4,7,R,L],
+            [7,8,B,T],
+            [6,7,B,T],
+            [5,4,T,B]],
+
+            10    : [[1,3,R,L],
+            [2,4,R,L],
+            [4,5,B,T],
+            [3,6,R,L],
+            [5,8,R,L],
+            [6,7,B,T],
+            [7,9,R,T],  
+            [8,9,R,L],
+            [9,10,B,T]]
+        };
 
 // left and top positions of the window in %
 // This specifies arrangements of each node. [5,10] means first node is 5% from left and 10% from top
-var window_positions = { 6: [[5,10],
+var window_positions = {
+                4 : [[10,30],
+                 [40,10],       
+                 [40,50],   
+                 [70,30]],
+
+                6: [[5,10],
 			     [5,50],	
 			     [30,25],	
 			     [55,10],	
 			     [55,50],	
-			     [80,25]]};
+			     [80,25]],
+
+                8: [[5,20],
+                 [5,60],    
+                 [40,5],   
+                 [40,45],   
+                 [40,85],   
+                 [75,5],
+                 [75,45],
+                 [75,85]],
+
+                10: [[5,20],
+                 [5,60],    
+                 [30,5],   
+                 [30,45],   
+                 [30,85],   
+                 [55,5],
+                 [55,45],
+                 [55,85],
+                 [80,20],
+                 [80,60]]
+            };
 
 // this should specify the requirement of each node.
 // NOTE: add "locked":false to starting nodes
-var levels = { 6 : [{"Dev":[0,0,1000], "QE":500,"locked":false},
+var levels = { 6 : [{"Dev":[0,0,1000], "QE":500, "XD":0,"locked":false},
 			{"Dev":[30,500,100], "QE":500,"XD":500,"locked":false},
 			{"Dev":[500,60,0], "QE":500,"XD":500},
-			{"Dev":[500,0,0], "QE":500},
+			{"Dev":[500,0,0], "QE":500, "XD":0},
 			{"Dev":[300,500,0], "QE":500,"XD":500},
-			{"Dev":[500,100,100], "QE":500,"XD":500}]}
+			{"Dev":[500,100,100], "QE":500,"XD":500}], 
+
+            4 : [{"Dev":[0,0,1000], "QE":500, "XD":0,"locked":false},
+            {"Dev":[30,500,100], "QE":500,"XD":500},
+            {"Dev":[500,60,0], "QE":500,"XD":500},
+            {"Dev":[500,0,0], "QE":500, "XD":0}], 
+
+            8 : [{"Dev":[10,0,50], "QE":30, "XD":20, "locked":false},
+            {"Dev":[0,100,0], "QE":20,"XD":10,"locked":false},
+            {"Dev":[30,10,0], "QE":0,"XD":0},
+            {"Dev":[50,10,10], "QE":30, "XD":0},
+            {"Dev":[20,0,100], "QE":20, "XD":0},
+            {"Dev":[0,100,0], "QE":20, "XD":10},
+            {"Dev":[0,0,100], "QE":50, "XD":20},
+            {"Dev":[50,10,10], "QE":30,"XD":10}], 
+
+            10 : [{"Dev":[10,0,50], "QE":30, "XD":20, "locked":false},
+            {"Dev":[0,100,0], "QE":20,"XD":10,"locked":false},
+            {"Dev":[30,10,0], "QE":0,"XD":0},
+            {"Dev":[50,10,10], "QE":30, "XD":0},
+            {"Dev":[20,0,100], "QE":20, "XD":0},
+            {"Dev":[0,100,0], "QE":20, "XD":10},
+            {"Dev":[0,0,100], "QE":50, "XD":20},
+            {"Dev":[0,0,100], "QE":50, "XD":20},
+            {"Dev":[0,0,100], "QE":50, "XD":20},
+            {"Dev":[50,10,10], "QE":30,"XD":10}]
+
+        }
 
 // people ------------------------------------------------
 // Dev - DB, .NET, Web
@@ -66,6 +144,7 @@ $(document).ready(function(){
 
 	// set game speed
 	$("#game_speed_button").click(function(){
+
 		G_GAME_SPEED = ((G_GAME_SPEED+1) % (cMaxGameSpeed+1));
 		if (!G_GAME_SPEED) G_GAME_SPEED = 1;
 		$("#game_speed").html(G_GAME_SPEED);
@@ -77,7 +156,7 @@ $(document).ready(function(){
 	for (var i=0; i<people["Dev"].length; i++){
 		node = people["Dev"][i];
 		var person = document.createElement("div");
-		person.innerHTML = "<b>Developer</b><br>A: "+node[0]+"<br>B: "+node[1]+"<br>C: "+node[2];
+		person.innerHTML = "<b>Developer " + (i+1) + "</b><br>DB: "+node[0]+"<br>.NET: "+node[1]+"<br>Web: "+node[2];
 		person.id = "Dev"+i;
 		person.setAttribute('class','people dev');
 		document.getElementById("toolbox").appendChild(person);
@@ -86,7 +165,7 @@ $(document).ready(function(){
 	// making QE
 	for (var i=0; i<people["QE"].length; i++){
 		var person = document.createElement("div");
-		person.innerHTML = "<b>Quality Engineer<br>"+people["QE"][i]+"</b>";
+		person.innerHTML = "<b>Quality Engineer " + (i+1) + "</b><br>"+people["QE"][i];
 		person.id = "QE"+i;
 		person.setAttribute('class','people QE');
 		document.getElementById("toolbox").appendChild(person);
@@ -95,7 +174,7 @@ $(document).ready(function(){
 	// making XD
 	for (var i=0; i<people["XD"].length; i++){
 		var person = document.createElement("div");
-		person.innerHTML = "<b>Experience Designer<br>"+people["XD"][i]+"</b>";
+		person.innerHTML = "<b>Experience Designer " + (i+1) + "</b><br>"+people["XD"][i];
 		person.id = "XD"+i;
 		person.setAttribute('class','people XD');
 		document.getElementById("toolbox").appendChild(person);
@@ -104,7 +183,7 @@ $(document).ready(function(){
 	// making manager
 	for (var i=0; i<people["Manager"]; i++){
 		var person = document.createElement("div");
-		person.innerHTML = "<b>Manager</b>";
+		person.innerHTML = "<b>Manager " + (i+1) + "</b>";
 		person.id = "Manager"+i;
 		person.setAttribute('class','people manager');
 		document.getElementById("toolbox").appendChild(person);
@@ -130,6 +209,7 @@ function displayProgress(){
 // this simply updates the windows using the array levels
 function create_tiles(){
     // add nodes
+    console.log("NUMTILES : " + G_NUM_TILES);
     for(var i=0; i<G_NUM_TILES; i++){
 	_window = document.createElement("div");
 	_window.id = "flowchartWindow"+(i+1);
