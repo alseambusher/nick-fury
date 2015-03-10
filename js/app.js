@@ -98,7 +98,6 @@ var window_positions = {
 
 // this should specify the requirement of each node.
 // NOTE: add "locked":false to starting nodes
-<<<<<<< HEAD
 var levels = { 6 : [{"Dev":[20,20,60], "QE":30, "XD":30,"locked":false},
 			{"Dev":[50,0,100], "QE":70,"XD":0,"locked":false},
 			{"Dev":[20,10,0], "QE":100,"XD":0},
@@ -110,19 +109,6 @@ var levels = { 6 : [{"Dev":[20,20,60], "QE":30, "XD":30,"locked":false},
             {"Dev":[60,100,10], "QE":70,"XD":20},
             {"Dev":[70,100,10], "QE":80,"XD":0},
             {"Dev":[0,100,0], "QE":100, "XD":30}], 
-=======
-var levels = { 6 : [{"Dev":[0,0,200], "QE":50, "XD":0,"locked":false},
-			{"Dev":[30,50,100], "QE":50,"XD":50,"locked":false},
-			{"Dev":[500,60,0], "QE":500,"XD":50},
-			{"Dev":[500,0,0], "QE":500, "XD":0},
-			{"Dev":[300,500,0], "QE":500,"XD":50},
-			{"Dev":[500,100,100], "QE":500,"XD":50}], 
-
-            4 : [{"Dev":[0,0,1000], "QE":500, "XD":0,"locked":false},
-            {"Dev":[30,500,100], "QE":500,"XD":500},
-            {"Dev":[500,60,0], "QE":500,"XD":500},
-            {"Dev":[500,0,0], "QE":500, "XD":0}], 
->>>>>>> c487cd98784f21dcfb2db360d4c1fd7b72ae3470
 
             8 : [{"Dev":[10,0,50], "QE":30, "XD":20, "locked":false},
             {"Dev":[0,100,0], "QE":20,"XD":10,"locked":false},
