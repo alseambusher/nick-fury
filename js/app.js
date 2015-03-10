@@ -142,8 +142,10 @@ var workers = {4:{},6:{},8:{},10:{}};
 // XD skills
 var people = { "Dev" : [[20,100,50],[50,10,100],[10,10,10]], "QE" : [30,20,50], "Manager" : 1, "XD" : [20,10]}
 
-
 $(document).ready(function(){
+
+	if(document.cookie=="")
+		document.cookie = JSON.stringify({4:-1, 6:-1, 8:-1, 10:-1})
     	G_NUM_TILES = parseInt($("#num_tiles").html());
 	// set num tiles
 	$(".num_tiles_selector").click(function(){
@@ -278,6 +280,22 @@ function display_progress(){
 				$("#Manager"+workers[G_NUM_TILES][id].Manager).fadeIn();
 			delete workers[G_NUM_TILES][id];
 			$("#"+id).css('box-shadow', '2px 2px 19px #e0e0e0');
+			// is game over
+			var isOver = true;
+			for(var i=0; i<levels[G_NUM_TILES].length; i++){
+				var node = levels[G_NUM_TILES][i];
+				if (JSON.stringify(node.Dev)!=JSON.stringify([0,0,0]) || node.QE != 0 || node.XD != 0)
+					isOver = false;
+			}
+			if(isOver){
+				G_GAME_STATE = cGameStopped;
+				var high_scores = JSON.parse(document.cookie);
+				// set high score
+				if(high_scores[G_NUM_TILES]<0 || high_scores[G_NUM_TILES] > TIME){
+					high_scores[G_NUM_TILES] = TIME;
+					document.cookie = JSON.stringify(high_scores);
+				}
+			}
 		}
 		// refresh locks
 		var to_lock = [];
@@ -354,13 +372,28 @@ function timer(){
 	if(hrs<10) hrs = "0"+hrs;
 	time = hrs+":"+min+":"+sec
 	$("#timer").html(time);	
-	setTimeout(timer,1000/G_GAME_SPEED);
+	if(G_GAME_STATE == cGameStarted)
+		setTimeout(timer,1000/G_GAME_SPEED);
 	
 }
 function start() {
-
     // create tiles
     create_tiles();
+
+    // show high score
+    var score = JSON.parse(document.cookie)[G_NUM_TILES];
+    if (score>0){
+    	var time = "";
+    	sec = score%60;
+    	if(sec<10) sec = "0"+sec;
+    	min = Math.floor(score/60)%60
+    	if(min<10) min = "0"+min;
+    	hrs = Math.floor(score/3600)
+    	if(hrs<10) hrs = "0"+hrs;
+    	time = hrs+":"+min+":"+sec
+    	$("#high_score").html(time);
+    }
+
     // make all the people in the toolbox draggable
     $(".people").draggable({revert: true});
     $(".window").droppable({

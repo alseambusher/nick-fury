@@ -174,3 +174,6 @@ vertical-align: middle;
     opacity:0.9;
     filter:alpha(opacity=90);
 }
+#high_score{
+    font-weight:bold;
+}
