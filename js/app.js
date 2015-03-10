@@ -19,10 +19,16 @@ var G_GAME_SPEED = 1;
 var G_GAME_STATE = cGameStopped;
 var G_NUM_TILES = 0;
 
+var dev_base_rate = 0.1 //0.1 * experience
+var qe_base_rate = 0.1
+var xd_base_rate = 0.1
+var manager_rate = 2 // increases total rate by 2
+
+var TIME = 0;
+
 // game settings -----------------------------------------
 // 1 3 R L means: node1 - node3 connection is made from right of node1 to left of node2
 // 6 is number of tiles
-// TODO for 8 10 12
 var game_connections = { 
             6: [[1,3,R,L],
 			[2,3,R,L],
@@ -92,12 +98,12 @@ var window_positions = {
 
 // this should specify the requirement of each node.
 // NOTE: add "locked":false to starting nodes
-var levels = { 6 : [{"Dev":[0,0,1000], "QE":500, "XD":0,"locked":false},
-			{"Dev":[30,500,100], "QE":500,"XD":500,"locked":false},
-			{"Dev":[500,60,0], "QE":500,"XD":500},
+var levels = { 6 : [{"Dev":[0,0,200], "QE":50, "XD":0,"locked":false},
+			{"Dev":[30,50,100], "QE":50,"XD":50,"locked":false},
+			{"Dev":[500,60,0], "QE":500,"XD":50},
 			{"Dev":[500,0,0], "QE":500, "XD":0},
-			{"Dev":[300,500,0], "QE":500,"XD":500},
-			{"Dev":[500,100,100], "QE":500,"XD":500}], 
+			{"Dev":[300,500,0], "QE":500,"XD":50},
+			{"Dev":[500,100,100], "QE":500,"XD":50}], 
 
             4 : [{"Dev":[0,0,1000], "QE":500, "XD":0,"locked":false},
             {"Dev":[30,500,100], "QE":500,"XD":500},
@@ -126,7 +132,8 @@ var levels = { 6 : [{"Dev":[0,0,1000], "QE":500, "XD":0,"locked":false},
 
         }
 
-var workers = {6:{}};
+// workers data is stored in this
+var workers = {4:{},6:{},8:{},10:{}};
 
 // people ------------------------------------------------
 // Dev - DB, .NET, Web
@@ -193,26 +200,125 @@ $(document).ready(function(){
 });
 
 
-
 // display progress alternates between two states
 var _state = true;
 function display_progress(){
-	// TODO do this only for active windows
+
 	for(var id in workers[G_NUM_TILES]){
+		task = parseInt(id[id.length-1])-1;
+
+		// blinking effect if work is in progress
 		if(_state)
 			$("#"+id).css('box-shadow', '2px 2px 19px #e0e0e0');
 		else
 			$("#"+id).css('box-shadow', '2px 2px 19px red');
+
+		// if manager exists speed up work rate
+		if (workers[G_NUM_TILES][id].Manager == undefined)
+			manager_boost = 1;
+		else
+			manager_boost = manager_rate;
+
+		// do working
+		for(var type in workers[G_NUM_TILES][id]){
+			worker_id = workers[G_NUM_TILES][id][type]
+			worker = people[type][worker_id]
+			if (type == "Dev"){
+				levels[G_NUM_TILES][task][type][0] = Math.max(0, levels[G_NUM_TILES][task][type][0] - manager_boost * dev_base_rate * worker[0]);
+				levels[G_NUM_TILES][task][type][1] = Math.max(0, levels[G_NUM_TILES][task][type][1] - manager_boost * dev_base_rate * worker[1]);
+				levels[G_NUM_TILES][task][type][2] = Math.max(0, levels[G_NUM_TILES][task][type][2] - manager_boost * dev_base_rate * worker[2]);
+			} else if (type != "Manager"){
+				levels[G_NUM_TILES][task][type] = Math.max(0, levels[G_NUM_TILES][task][type] - manager_boost * dev_base_rate * worker);
+			}
+		}
+		// refresh ui
+    		node = levels[G_NUM_TILES][task];
+		var content="";
+		if(node.Dev != undefined)
+			content+="<div class='dev'>"+node.Dev[0]+"<b>A</b> "+node.Dev[1]+"<b>B</b> "+node.Dev[2]+"<b>C</b><br></div>";
+		if(node.QE != undefined)
+			content+="<div class='QE'>"+node.QE+"</div>";
+		if(node.XD != undefined)
+			content+="<div class='XD'>"+node.XD+"</div><br>";
+
+		$("#"+id).html(content);
+
+		// freeing workers
+		var isDevExists = false;
+		var isQEExists = false;
+		var isXDExists = false;
+		//TODO update the capability of workers
+		for(var type in workers[G_NUM_TILES][id]){
+			worker_id = workers[G_NUM_TILES][id][type]
+			worker = people[type][worker_id]
+			if (type == "Dev"){
+				// if all are 0
+				if ( !(levels[G_NUM_TILES][task][type][0] || levels[G_NUM_TILES][task][type][1] || levels[G_NUM_TILES][task][type][2]) ){
+					delete workers[G_NUM_TILES][id][type];
+					$("#"+type+worker_id).fadeIn();
+				} else {
+					isDevExists = true;
+				}
+
+			} else if (type != "Manager"){
+				if (!levels[G_NUM_TILES][task][type]){
+					delete workers[G_NUM_TILES][id][type];
+					$("#"+type+worker_id).fadeIn();
+				} else {
+					if (type == "QE")
+						isQEExists = true;
+					else
+						isXDExists = true;
+				}
+			}
+		}
+		// if all are 0 delete task
+		if (!(isDevExists || isQEExists || isXDExists)){
+			if(workers[G_NUM_TILES][id].Manager != undefined)
+				$("#Manager"+workers[G_NUM_TILES][id].Manager).fadeIn();
+			delete workers[G_NUM_TILES][id];
+			$("#"+id).css('box-shadow', '2px 2px 19px #e0e0e0');
+		}
+		// refresh locks
+		var to_lock = [];
+		for(var i=0; i<game_connections[G_NUM_TILES].length; i++){
+			_parent = game_connections[G_NUM_TILES][i][0];
+			_child = game_connections[G_NUM_TILES][i][1];
+				if(_parent==2)
+				 console.log(workers[G_NUM_TILES]["flowchartWindow"+_parent]);
+			var node = levels[G_NUM_TILES][_parent-1];
+			// parents are locked or parent is still a worker then lock
+			if ((levels[G_NUM_TILES][_parent-1].locked == undefined) || (JSON.stringify(node.Dev)!=JSON.stringify([0,0,0]) || node.QE != 0 || node.XD != 0)){
+					to_lock.push(_child);
+			}
+		}
+		for(var i=1; i<=G_NUM_TILES; i++){
+			// if a task is currently locked and is not in to_lock then unlock it
+			if((levels[G_NUM_TILES][i-1].locked == undefined) && (to_lock.indexOf(i) < 0)){
+				levels[G_NUM_TILES][i-1].locked = false;
+				var node = levels[G_NUM_TILES][i-1];
+				var content="";
+				if(node.Dev != undefined)
+					content+="<div class='dev'>"+node.Dev[0]+"<b>A</b> "+node.Dev[1]+"<b>B</b> "+node.Dev[2]+"<b>C</b><br></div>";
+				if(node.QE != undefined)
+					content+="<div class='QE'>"+node.QE+"</div>";
+				if(node.XD != undefined)
+					content+="<div class='XD'>"+node.XD+"</div><br>";
+
+				$("#flowchartWindow"+i).html(content);
+				$("#flowchartWindow"+i).removeClass("locked");
+			}
+		}
+
 	}
 	_state = !_state;
 
 	if(G_GAME_STATE == cGameStarted)
-		setTimeout(display_progress, 500/G_GAME_SPEED);
+		setTimeout(display_progress, 1000/G_GAME_SPEED);
 }
 // this simply updates the windows using the array levels
 function create_tiles(){
     // add nodes
-    console.log("NUMTILES : " + G_NUM_TILES);
     for(var i=0; i<G_NUM_TILES; i++){
 	_window = document.createElement("div");
 	_window.id = "flowchartWindow"+(i+1);
@@ -232,15 +338,24 @@ function create_tiles(){
 	}
 	else{
 		_window.setAttribute("class", "window locked");
-		_window.innerHTML = "<b>Locked</b>";
+		_window.innerHTML = "<b>LOCKED</b>";
 	}
 	document.getElementById("flow").appendChild(_window);
     }
 }
-
-//call this after end of process completion
-function update_locks(){
-	//TODO
+function timer(){
+	TIME+=1;
+	time = "";
+	sec = TIME%60;
+	if(sec<10) sec = "0"+sec;
+	min = Math.floor(TIME/60)%60
+	if(min<10) min = "0"+min;
+	hrs = Math.floor(TIME/3600)
+	if(hrs<10) hrs = "0"+hrs;
+	time = hrs+":"+min+":"+sec
+	$("#timer").html(time);	
+	setTimeout(timer,1000/G_GAME_SPEED);
+	
 }
 function start() {
 
@@ -250,7 +365,7 @@ function start() {
     $(".people").draggable({revert: true});
     $(".window").droppable({
     	drop: function(e,ui){
-	//TODO check
+	//TODO check if the task is locked
 		id = ui.draggable[0].id;
 		index = parseInt(id[id.length-1]);
 		type = id.substr(0,id.length-1);
@@ -264,7 +379,6 @@ function start() {
 				$("#"+id).fadeOut();
 			}
 		}
-		console.log(workers);
 	},
 	accept: ".people"
     });
@@ -414,4 +528,5 @@ function start() {
     // set flag of game state
     G_GAME_STATE = cGameStarted;
     display_progress();
+    timer();
 }
