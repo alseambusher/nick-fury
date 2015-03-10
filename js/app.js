@@ -24,11 +24,11 @@ var G_NUM_TILES = 0;
 // 6 is number of tiles
 // TODO for 8 10 12
 var game_connections = { 
-            6: [[1,3,R,L],
+            6: [[1,3,R,T],
 			[2,3,R,L],
 			[3,4,R,L],
 			[3,5,B,L],
-			[4,6,R,L],
+			[4,6,R,T],
 			[5,6,R,L]],
 
             4    : [[1,2,R,L],
@@ -92,17 +92,17 @@ var window_positions = {
 
 // this should specify the requirement of each node.
 // NOTE: add "locked":false to starting nodes
-var levels = { 6 : [{"Dev":[0,0,1000], "QE":500, "XD":0,"locked":false},
-			{"Dev":[30,500,100], "QE":500,"XD":500,"locked":false},
-			{"Dev":[500,60,0], "QE":500,"XD":500},
-			{"Dev":[500,0,0], "QE":500, "XD":0},
-			{"Dev":[300,500,0], "QE":500,"XD":500},
-			{"Dev":[500,100,100], "QE":500,"XD":500}], 
+var levels = { 6 : [{"Dev":[20,20,60], "QE":30, "XD":30,"locked":false},
+			{"Dev":[50,0,100], "QE":70,"XD":0,"locked":false},
+			{"Dev":[20,10,0], "QE":100,"XD":0},
+			{"Dev":[0,100,0], "QE":20, "XD":10},
+			{"Dev":[10,10,100], "QE":0,"XD":20},
+			{"Dev":[60,10,10], "QE":70,"XD":30}], 
 
-            4 : [{"Dev":[0,0,1000], "QE":500, "XD":0,"locked":false},
-            {"Dev":[30,500,100], "QE":500,"XD":500},
-            {"Dev":[500,60,0], "QE":500,"XD":500},
-            {"Dev":[500,0,0], "QE":500, "XD":0}], 
+            4 : [{"Dev":[70,10,10], "QE":20, "XD":30,"locked":false},
+            {"Dev":[60,100,10], "QE":70,"XD":20},
+            {"Dev":[70,100,10], "QE":80,"XD":0},
+            {"Dev":[0,100,0], "QE":100, "XD":30}], 
 
             8 : [{"Dev":[10,0,50], "QE":30, "XD":20, "locked":false},
             {"Dev":[0,100,0], "QE":20,"XD":10,"locked":false},
@@ -120,8 +120,8 @@ var levels = { 6 : [{"Dev":[0,0,1000], "QE":500, "XD":0,"locked":false},
             {"Dev":[20,0,100], "QE":20, "XD":0},
             {"Dev":[0,100,0], "QE":20, "XD":10},
             {"Dev":[0,0,100], "QE":50, "XD":20},
-            {"Dev":[0,0,100], "QE":50, "XD":20},
-            {"Dev":[0,0,100], "QE":50, "XD":20},
+            {"Dev":[20,10,100], "QE":20, "XD":0},
+            {"Dev":[50,10,0], "QE":50, "XD":10},
             {"Dev":[50,10,10], "QE":30,"XD":10}]
 
         }
