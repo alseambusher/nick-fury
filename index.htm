@@ -39,9 +39,11 @@
         <div class="navbar-form navbar-left form-group">
 	  <a class="btn btn-success" id="start_game_button">Start Game</a>
 	  <a class="btn btn-info" id="game_speed_button">Game Speed - <span id="game_speed">1</span>x</a>
+	  <a class="btn btn-danger" onclick="location.reload();">Refresh</a>
         </div>
       <ul class="nav navbar-nav navbar-right">
-        <li><a href="#">00:00:00</a></li>
+        <li><a href="#" id="high_score"></a></li>
+        <li><a href="#" id="timer">00:00:00</a></li>
       </ul>
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
