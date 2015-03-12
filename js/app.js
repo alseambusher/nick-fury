@@ -98,11 +98,11 @@ var window_positions = {
 
 // this should specify the requirement of each node.
 // NOTE: add "locked":false to starting nodes
-var levels = { 6 : [{"Dev":[20,20,60], "QE":30, "XD":30,"locked":false},
+var levels_unchanged = { 6 : [{"Dev":[100,20,60], "QE":30, "XD":30,"locked":false},
 			{"Dev":[50,0,100], "QE":70,"XD":0,"locked":false},
 			{"Dev":[20,10,0], "QE":100,"XD":0},
 			{"Dev":[0,100,0], "QE":20, "XD":10},
-			{"Dev":[10,10,100], "QE":0,"XD":20},
+			{"Dev":[10,10,100], "QE":30,"XD":20},
 			{"Dev":[60,10,10], "QE":70,"XD":30}], 
 
             4 : [{"Dev":[70,10,10], "QE":20, "XD":30,"locked":false},
@@ -131,6 +131,8 @@ var levels = { 6 : [{"Dev":[20,20,60], "QE":30, "XD":30,"locked":false},
             {"Dev":[50,10,10], "QE":30,"XD":10}]
 
         }
+
+var levels = {}
 
 // workers data is stored in this
 var workers = {4:{},6:{},8:{},10:{}};
@@ -162,8 +164,12 @@ $(document).ready(function(){
 	});
 
 	$("#start_game_button").click(start);
+	make_people();
+});
 
+function make_people(){
 	// making dev
+	$("#toolbox").html("");
 	for (var i=0; i<people["Dev"].length; i++){
 		node = people["Dev"][i];
 		var person = document.createElement("div");
@@ -171,6 +177,7 @@ $(document).ready(function(){
 		person.id = "Dev"+i;
 		person.setAttribute('class','people dev');
 		document.getElementById("toolbox").appendChild(person);
+	
 	}
 	document.getElementById("toolbox").innerHTML+="<br>";
 	// making QE
@@ -199,7 +206,28 @@ $(document).ready(function(){
 		person.setAttribute('class','people manager');
 		document.getElementById("toolbox").appendChild(person);
 	}
-});
+}
+
+function update_people(){
+	// making dev
+	for (var i=0; i<people["Dev"].length; i++){
+		node = people["Dev"][i];
+		$("#Dev"+i).html("<b>Developer " + (i+1) + "</b><br>DB: "+node[0]+"<br>.NET: "+node[1]+"<br>Web: "+node[2]);
+	
+	}
+	// making QE
+	for (var i=0; i<people["QE"].length; i++){
+		$("#QE"+i).html("<b>Quality Engineer " + (i+1) + "</b><br>"+people["QE"][i]);
+	}
+	// making XD
+	for (var i=0; i<people["XD"].length; i++){
+		$("#XD"+i).html("<b>Experience Designer " + (i+1) + "</b><br>"+people["XD"][i]);
+	}
+	// making manager
+	for (var i=0; i<people["Manager"]; i++){
+		$("#Manager"+i).html("<b>Manager " + (i+1) + "</b>");
+	}
+}
 
 
 // display progress alternates between two states
@@ -249,7 +277,6 @@ function display_progress(){
 		var isDevExists = false;
 		var isQEExists = false;
 		var isXDExists = false;
-		//TODO update the capability of workers
 		for(var type in workers[G_NUM_TILES][id]){
 			worker_id = workers[G_NUM_TILES][id][type]
 			worker = people[type][worker_id]
@@ -257,7 +284,11 @@ function display_progress(){
 				// if all are 0
 				if ( !(levels[G_NUM_TILES][task][type][0] || levels[G_NUM_TILES][task][type][1] || levels[G_NUM_TILES][task][type][2]) ){
 					delete workers[G_NUM_TILES][id][type];
+					people[type][worker_id][0]+=levels_unchanged[G_NUM_TILES][task][type][0]*0.5;
+					people[type][worker_id][1]+=levels_unchanged[G_NUM_TILES][task][type][1]*0.5;
+					people[type][worker_id][2]+=levels_unchanged[G_NUM_TILES][task][type][2]*0.5;
 					$("#"+type+worker_id).fadeIn();
+					update_people();
 				} else {
 					isDevExists = true;
 				}
@@ -265,7 +296,9 @@ function display_progress(){
 			} else if (type != "Manager"){
 				if (!levels[G_NUM_TILES][task][type]){
 					delete workers[G_NUM_TILES][id][type];
+					people[type][worker_id]+=levels_unchanged[G_NUM_TILES][task][type]*0.05;
 					$("#"+type+worker_id).fadeIn();
+					update_people();
 				} else {
 					if (type == "QE")
 						isQEExists = true;
@@ -302,8 +335,6 @@ function display_progress(){
 		for(var i=0; i<game_connections[G_NUM_TILES].length; i++){
 			_parent = game_connections[G_NUM_TILES][i][0];
 			_child = game_connections[G_NUM_TILES][i][1];
-				if(_parent==2)
-				 console.log(workers[G_NUM_TILES]["flowchartWindow"+_parent]);
 			var node = levels[G_NUM_TILES][_parent-1];
 			// parents are locked or parent is still a worker then lock
 			if ((levels[G_NUM_TILES][_parent-1].locked == undefined) || (JSON.stringify(node.Dev)!=JSON.stringify([0,0,0]) || node.QE != 0 || node.XD != 0)){
@@ -376,24 +407,8 @@ function timer(){
 		setTimeout(timer,1000/G_GAME_SPEED);
 	
 }
-function start() {
-    // create tiles
-    create_tiles();
 
-    // show high score
-    var score = JSON.parse(document.cookie)[G_NUM_TILES];
-    if (score>0){
-    	var time = "";
-    	sec = score%60;
-    	if(sec<10) sec = "0"+sec;
-    	min = Math.floor(score/60)%60
-    	if(min<10) min = "0"+min;
-    	hrs = Math.floor(score/3600)
-    	if(hrs<10) hrs = "0"+hrs;
-    	time = hrs+":"+min+":"+sec
-    	$("#high_score").html(time);
-    }
-
+function drag_drop(){
     // make all the people in the toolbox draggable
     $(".people").draggable({revert: true});
     $(".window").droppable({
@@ -415,6 +430,28 @@ function start() {
 	},
 	accept: ".people"
     });
+}
+function start() {
+    levels = JSON.parse(JSON.stringify(levels_unchanged));
+    // create tiles
+    create_tiles();
+    drag_drop();
+
+    // show high score
+    var score = JSON.parse(document.cookie)[G_NUM_TILES];
+    if (score>0){
+    	var time = "";
+    	sec = score%60;
+    	if(sec<10) sec = "0"+sec;
+    	min = Math.floor(score/60)%60
+    	if(min<10) min = "0"+min;
+    	hrs = Math.floor(score/3600)
+    	if(hrs<10) hrs = "0"+hrs;
+    	time = hrs+":"+min+":"+sec
+    	$("#high_score").html(time);
+    }
+
+
 
     var instance = jsPlumb.getInstance({
         // default drag options
@@ -492,7 +529,7 @@ function start() {
             ]
         },
         init = function (connection) {
-            connection.getOverlay("label").setLabel(connection.sourceId.substring(15) + "-" + connection.targetId.substring(15));
+            //connection.getOverlay("label").setLabel(connection.sourceId.substring(15) + "-" + connection.targetId.substring(15));
         };
 
     var _addEndpoints = function (toId, sourceAnchors, targetAnchors) {
